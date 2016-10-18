@@ -1,0 +1,3 @@
+Make a apps with intensity data 
+- on click the shape file will open
+- make interactive plot and also show all regression curves, histogram and stake bar
