@@ -1,0 +1,351 @@
+###Title: "Validiy cell base estimations"
+#Author: "S. Sikder"
+#Date: "February 10, 2016"
+#Output: html_document
+
+---
+
+Loading stats package 
+
+```{r}
+require(stats)
+```
+
+### reading csv file
+
+
+```{r}
+cell <- read.csv(file.choose(),header = T, sep = ',')
+attach(cell)
+```
+
+
+file source: D:\PhD in UB_New\PhD_GIS\Structure\Density   
+select  file:  DCC_building_Grid100_density_without_cantonment_centroid
+
+
+Summary
+
+```{r}
+str(cell)
+```
+
+
+
+ploting 1
+
+```{r}
+exponential.model <- lm(Edj ~ PopD_m)
+summary(exponential.model)
+PopD_mValues <- seq(0,0.16, 0.01)
+Counts.exponential2 <- exp(predict(exponential.model, list(PopD_m = PopD_mValues)))
+plot(  y = Edj, x= PopD_m, xlim = c(0,0.16), xlab = "Population density person/sq.km", ylab = " Energy consumption density kg oil eqv/sq.m", pch =16)
+lines(PopD_mValues, Counts.exponential2, col = 2, lwd = 3)
+abline(lm(Edj~ PopD_m), col= 4, lty =3,lwd = 3)
+
+```
+
+
+
+ploting 2 with 50% dsmple
+
+```{r}
+
+Edj_50 <- sample(Edj, 6182, replace = TRUE)
+PopD_m_50 <- sample(PopD_m, 6182, replace = TRUE)
+
+exponential.model_50 <- lm(Edj_50 ~ PopD_m_50)
+summary(exponential.model_50)
+PopD_m_50Values <- seq(0,0.16, 0.01)
+Counts.exponential2_50 <- exp(predict(exponential.model_50, list(PopD_m_50 = PopD_m_50Values)))
+plot(  y = Edj_50, x= PopD_m_50, xlim = c(0,0.16), ylim = c(0, 6), xlab = "Population density", ylab = " Energy consumption density", pch =16)
+lines(PopD_m_50Values, Counts.exponential2_50, col = 2, lwd = 3)
+abline(lm(Edj_50~ PopD_m_50), col= 4, lty =3,lwd = 3)
+
+
+```
+
+
+ploting 3
+
+```{r}
+exponential.model <- lm(log(PopD_m)~ Dist_KM)
+summary(exponential.model)
+Dist_KMValues <- seq(0, 16, 0.01)
+Counts.exponential2 <- exp(predict(exponential.model, list(Dist_KM = Dist_KMValues)))
+plot(  y = PopD_m, x= Dist_KM, xlim = c(0,16), ylim = c(0, 0.16), xlab = "Distance from CBD (km)", ylab = " Population density", col = 8)
+lines(Dist_KMValues, Counts.exponential2, col = 2, lwd = 3)
+abline(lm(PopD_m~ Dist_KM), col= 4, lty =3,lwd = 3)
+
+
+```
+
+
+
+ploting 4
+
+```{r}
+exponential.model <- lm(Edj ~ Dist_KM)
+summary(exponential.model)
+Dist_KMValues <- seq(0, 16, 0.0001)
+Counts.exponential2 <- exp(predict(exponential.model, list(Dist_KM = Dist_KMValues)))
+plot(  y = Edj, x= Dist_KM, xlim = c(0,16), ylim = c(0, 6), xlab = "Distance from CBD (km)", ylab = " Energy density", pch =16, col = 8)
+lines(Dist_KMValues, Counts.exponential2, col = 2, lwd = 3)
+abline(lm(Edj ~ Dist_KM), col= 4, lty =3,lwd = 3)
+
+```
+
+
+
+# need to do normalization for getting exponential curve and dimention less data
+
+
+Normalization
+```{r, echo=TRUE}
+
+normEdj <- (cell$Edj-mean(cell$Edj))/sd(Edj)
+normPopD_m <- (cell$PopD_m-mean(cell$PopD_m))/sd(PopD_m)
+normDist_KM <- (cell$Dist_KM-mean(cell$Dist_KM))/ sd(Dist_KM)
+```
+
+
+
+ploting 3
+
+```{r, echo=TRUE}
+exponential.model <- lm(log(normPopD_m) ~ Dist_KM)
+summary(exponential.model)
+Dist_KMValues <- seq(0, 16, 0.01)
+Counts.exponential2 <- exp(predict(exponential.model, list(Dist_KM = Dist_KMValues)))
+plot(y = normPopD_m, x= Dist_KM, ylim = c(-2,4), xlab = "Distance from CBD (km)", ylab = " Population density", pch =1, col = 8, cex = 0.5)
+lines(Dist_KMValues, Counts.exponential2, col = 2, lwd = 3)
+abline(lm(normPopD_m ~ Dist_KM), col= 2, lty =3,lwd = 3)
+abline(h=0, lty= 3, col = 4)
+
+```
+
+
+
+ploting 4
+
+```{r, echo= TRUE}
+exponential.model <- lm(log(normEdj) ~ Dist_KM)
+summary(exponential.model)
+Dist_KMValues <- seq(0, 16, 0.01)
+Counts.exponential2 <- exp(predict(exponential.model, list(Dist_KM = Dist_KMValues)))
+plot(y = normEdj, x= Dist_KM, xlab = "Distance from CBD (km)", ylab = " Energy consumption density", pch =1, cex = 0.5, col = 8, ylim = c(-2,4))
+lines(Dist_KMValues, Counts.exponential2, col = 2, lwd = 3)
+abline(lm(normEdj ~ Dist_KM), col= 2, lty =3,lwd = 3)
+abline(h=0, col = 4, lty=3)
+
+```
+
+
+
+
+
+ploting 2 with 50% dsmple
+
+```{r, echo=TRUE}
+
+Edj_50 <- sample(normEdj, 6182, replace = TRUE)
+PopD_m_50 <- sample(PopD_m, 6182, replace = TRUE)
+
+exponential.model_50 <- lm(Edj_50 ~ PopD_m_50)
+summary(exponential.model_50)
+PopD_m_50Values <- seq(0,0.16, 0.01)
+Counts.exponential2_50 <- exp(predict(exponential.model_50, list(PopD_m_50 = PopD_m_50Values)))
+plot(  y = Edj_50, x= PopD_m_50, xlim = c(0,0.16), ylim = c(0, 6), xlab = "Population density", ylab = " Energy consumption density", pch =16)
+lines(PopD_m_50Values, Counts.exponential2_50, col = 2, lwd = 3)
+abline(lm(Edj_50~ PopD_m_50), col= 4, lty =3,lwd = 3)
+
+```
+
+
+
+
+# assign data as dataframe with all normalized data
+
+```{r, echo= TRUE}
+Dist_KM<- cell$Dist_KM # assign distance for common name
+
+comb_val <- cbind(Dist_KM,normPopD_m, normEdj) # combine as numeric
+val<- as.data.frame(comb_val) # convert to dataframe
+
+```
+
+
+
+# ploting with GAM polycentric structure of city (using all data)
+```{r, echo = TRUE}
+library(ggplot2)
+library(mgcv)
+
+qplot(data = val, Dist_KM,normPopD_m,col = I(8), alpha= I(1/5), ylim = c(-2,4), xlim = c(0,15), xlab = "Distance from CBD (km)", ylab = " Population density")+stat_smooth(method = "gam", col = "red", formula = y~s(x))+geom_hline(yintercept = 0, col="blue", lty=2)+theme_bw()
+
+qplot(data=val, Dist_KM,normEdj,col = I(8),alpha = I(1/5), ylim = c(-2,4), xlim = c(0,15), xlab = "Distance from CBD (km)", ylab = " Energy consumption density")+stat_smooth(method = "gam", col = "red", formula = y~s(x))+geom_hline(yintercept = 0, col="blue", lty=2)+theme_bw()
+
+```
+
+
+
+
+
+
+### bagging approach to find out non-linear relationships
+
+# count dimention and re-order
+```{r, echo=TRUE}
+# count dimension
+dim(val)
+
+# reorder rows based on Independent variable_distance from CBD
+val <- val[order(val$Dist_KM),]
+```
+
+# estimation with 10 sample_Population density
+```{r, echo=TRUE}
+
+# create empty matrix
+ll <- matrix(NA,nrow=10,ncol=12364)
+
+# iterate 10 times (select the whole function and run)
+for(i in 1:10){
+    # create sample from data with replacement
+    ss <- sample(1:dim(val)[1],replace=TRUE)
+    # draw sample from the data and reorder rows based on distance
+    val0 <- val[ss,]; val0 <- val0[order(val0$Dist_KM),]
+    # fit loess function through data (similar to spline)
+    loess0 <- loess(val0$normPopD_m ~ val0$Dist_KM, degree= 1, span = 0.75)
+    # prediction from loess curve for the same values each time
+    ll[i,] <- predict(loess0,newdata=data.frame(val=1:12364))
+}
+# plot the data points
+plot(val$Dist_KM,val$normPopD_m,pch=1,cex=0.5, col = 8, ylim = c(-2,4), xlim = c(0,15), xlab = "Distance from CBD (km)", ylab = " Population density")
+# plot each prediction model (select whole function and run)
+for(i in 1:10){lines(1:12364,ll[i,],col="khaki",lwd=1)}
+# plot the average in red
+lines(1:12364,apply(ll,2,mean),col=2,lwd=2)
+abline(h=0, col= 4, lty=2)
+
+```
+
+# estimation with 10 sample_energy density
+```{r, echo=TRUE}
+
+# create empty matrix
+ll <- matrix(NA,nrow=10,ncol=12364)
+
+# iterate 1236 times (select the whole function and run)
+for(i in 1:10){
+    # create sample from data with replacement
+    ss <- sample(1:dim(val)[1],replace=TRUE)
+    # draw sample from the data and reorder rows based on distance
+    val0 <- val[ss,]; val0 <- val0[order(val0$Dist_KM),]
+    # fit loess function through data (similar to spline)
+    loess0 <- loess(val0$normEdj ~ val0$Dist_KM, degree=1, span = 0.05)
+    # prediction from loess curve for the same values each time
+    ll[i,] <- predict(loess0,newdata=data.frame(val=1:12364))
+}
+# plot the data points
+plot(val$Dist_KM,val$normEdj,pch=1,cex=0.5, col = 8, ylim = c(-2,4), xlim = c(0,15), xlab = "Distance from CBD (km)", ylab = " Energy consumption density")
+# plot each prediction model (select whole function and run)
+for(i in 1:10){lines(1:12364,ll[i,],col="khaki",lwd=1)}
+# plot the average in red
+lines(1:12364,apply(ll,2,mean),col=2,lwd=2)
+abline(h=0,col= 4, lty=2)
+
+```
+
+### value of span (standard 0.5)  has a robust effect for smoothing or degree for polynominal localizing
+
+### no span means that all data used from each local grid
+### 0.5 means 50% data used from each local grid
+
+
+----------------
+
+# plotting with two density
+
+```{r}
+plot( x= val$normPopD_m, y = val$normEdj,  xlim = c(-2,4), ylim = c(-2,4), xlab = "Population density person/sq.km", ylab = " Energy consumption density kg oil eqv/sq.m", pch =1, cex=0.5, col = 8)
+abline(lm(val$normEdj~ val$normPopD_m), col= 2, lty =3,lwd = 3)
+abline(h=0, col=4, lty=2)
+
+```
+
+
+# machine learning after datapartition and subseting
+
+```{r}
+
+install.packages("caret")
+library(caret)
+
+inTrain<- createDataPartition(y=val$Dist_KM, p = 0.75, list= FALSE) # define trainin set
+
+# subset training and testing set
+training<- val[inTrain,]
+testing <- val[-inTrain,]
+
+
+## For Testing dataset
+
+# reorder rows based on Independent variable_distance from CBD
+training_order <- training[order(training$Dist_KM),]
+
+# create empty matrix
+ll <- matrix(NA,nrow=10,ncol=9276)
+
+# iterate 1236 times (select the whole function and run)
+for(i in 1:10){
+    # create sample from data with replacement
+    ss <- sample(1:dim(training_order)[1],replace=TRUE)
+    # draw sample from the data and reorder rows based on distance
+    val0 <- training_order[ss,]; val0 <- val0[order(val0$Dist_KM),]
+    # fit loess function through data (similar to spline)
+    loess0 <- loess(val0$normEdj ~ val0$Dist_KM, degree=1, span = 0.75)
+    # prediction from loess curve for the same values each time
+    ll[i,] <- predict(loess0,newdata=data.frame(val=1:9276))
+}
+# plot the data points
+plot(training_order$Dist_KM,training_order$normEdj,pch=1,cex=0.5, col = 8, ylim = c(-2,4), xlim = c(0,30), xlab = "Distance from CBD (km)", ylab = " Energy consumption density")
+# plot each prediction model (select whole function and run)
+for(i in 1:10){lines(1:9276,ll[i,],col="khaki",lwd=1)}
+# plot the average in red
+lines(1:9276,apply(ll,2,mean),col=2,lwd=2)
+abline(h=0,col= 4, lty=2)
+
+
+## For Testing dataset
+
+# reorder rows based on Independent variable_distance from CBD
+
+testing_order <- testing[order(testing$Dist_KM),]
+
+# create empty matrix
+ll <- matrix(NA,nrow=10,ncol=3088)
+
+# iterate 1236 times (select the whole function and run)
+for(i in 1:10){
+    # create sample from data with replacement
+    ss <- sample(1:dim(testing_order)[1],replace=TRUE)
+    # draw sample from the data and reorder rows based on distance
+    val0 <- testing_order[ss,]; val0 <- val0[order(val0$Dist_KM),]
+    # fit loess function through data (similar to spline)
+    loess0 <- loess(val0$normEdj ~ val0$Dist_KM, degree=1, span = 0.75)
+    # prediction from loess curve for the same values each time
+    ll[i,] <- predict(loess0,newdata=data.frame(val=1:3088))
+}
+# plot the data points
+plot(testing_order$Dist_KM,testing_order$normEdj,pch=1,cex=0.5, col = 8, ylim = c(-2,4), xlim = c(0,30), xlab = "Distance from CBD (km)", ylab = " Energy consumption density")
+# plot each prediction model (select whole function and run)
+for(i in 1:10){lines(1:3088,ll[i,],col="khaki",lwd=1)}
+# plot the average in red
+lines(1:3088,apply(ll,2,mean),col=2,lwd=2)
+abline(h=0,col= 4, lty=2)
+
+
+
+```
+
