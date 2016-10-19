@@ -1,3 +1,4 @@
-Make a apps with intensity data 
-- on click the shape file will open
-- make interactive plot and also show all regression curves, histogram and stake bar
+Future work will make a apps with density data
+
+- on click file should upload 
+- make interactive plot and also show all map, regression curves, histogram and stake bar
