@@ -1,0 +1,73 @@
+---
+title: "Building - Density - Dhaka_City"
+author: "S. Sikder"
+date: "January 12, 2017"
+output: html_document
+---
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+
+# set working directory
+setwd("D:/PhD in UB_New/PhD_GIS/Structure/Density/Energy_buildinguse/Wardwise")
+
+
+# load packages 
+require(leaflet)
+require(rgdal)
+require(raster)
+
+# loading data using raster package 
+myShape <- shapefile("all_type_space_leaflet.shp")
+ 
+
+# set Dhaka city map from osm data
+
+m <- leaflet() %>% setView(lng = 90.399452, lat = 23.767176, zoom = 11) # set map extent
+m %>% addTiles() %>% addPolygons(data=myShape, fill=FALSE, weight = 1) # overlay with a polygon layer
+
+```
+
+
+# get population density map
+
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+
+# make color variable
+col_var <- colorNumeric(
+  palette = "YlGnBu",
+  domain = myShape$Pop_07/myShape$Area
+)
+
+m %>% addTiles() %>% addPolygons(data=myShape, stroke = FALSE, smoothFactor = 0.2, fillOpacity = 0.8,
+    color = ~col_var(myShape$Pop_07/myShape$Area) ) %>% addLegend(position = "bottomright", pal=col_var, values = myShape$Pop_07/myShape$Area, title = "Pop Density (2007)",
+    opacity = 1) # making color density map and adding legend
+
+```
+
+
+
+# get energy density with quantile distribution and vertical building intensiy
+
+
+```{r, echo=TRUE, message=FALSE, warning=FALSE}
+
+popup_content<- myShape$Edt
+
+# make color variable
+col_q <- colorQuantile("Reds", myShape$Edt, 4)
+
+m %>% addTiles() %>% addPolygons(data=myShape, stroke = FALSE, smoothFactor = 0.2, fillOpacity = 0.8,
+    color = ~col_q(myShape$Edt) ) %>% addLegend(position = "bottomright", pal=col_q, values = myShape$Edt, title = "Energy density (2007)",opacity = 1) %>% addCircleMarkers(lng = myShape$POINT_X, lat=myShape$POINT_Y, radius = myShape$Sum_VUI, clusterOptions = markerClusterOptions())
+
+
+# making color density map and adding legend
+
+```
+
+## please zoom untill you see the nunbers
+
+
+
+
+See for more information about tutorial http://amsantac.co/blog/en/r/2015/08/11/leaflet-R.html
